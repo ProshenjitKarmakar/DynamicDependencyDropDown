@@ -1,64 +1,154 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400"></a></p>
 
-<p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+# Dynamic Dependency DropDown Using jQuery AJAX
 
-## About Laravel
+This is Dynamic Dependency DropDown using jQuery AJAX. I take three table named 'Country', 'State', 'City'.
+Using Dependency Injuction 'State' field will depend on 'Country' table field. Respectively 'City'
+field will depend on 'State' field.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Installation
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Installing this project first download the project and run this command on terminal
 
-## Learning Laravel
+```bash
+  php artisan serve
+```
+    
+## File management
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- There is a controller named "DynamicDependencyController". All methods are given there.
+```bash
+  path : App/Http/Controllers/DynamicDependencyController.php
+```
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 1500 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- There is three model named "Country", "State", "City".
+```bash
+  path :  App/Models/Country.php
+          App/Models/State.php
+          App/Models/City.php
+```
 
-## Laravel Sponsors
+- There is a file named "index.blade.php". All frontend code are given there.
+```bash
+  path :  resources/views/dynamicDependencies/index.blade.php.
+```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+## jQuery Ajax Dependency Injection for - "State" and "City" depend on "Country"
 
-### Premium Partners
+```javascript
+<script>
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
+  jQuery(document).ready(function(){
+      // for auto select state
+      jQuery('#country').change(function(event){
+          var country_id = jQuery(this).val();
+          // console.log(country_id);
 
-## Contributing
+          jQuery('#state').html('');
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+          $.ajax({
+              url         : 'show-state',
+              type        : 'POST',
+              dataType    : 'json',
+              data        : {
+                  country_id : country_id, //1st 'country_id' is database field name and 2nd 'country_id' is var name
+                  _token     : '{{ csrf_token() }}'
+              },
+              success     : function(response){
+                  jQuery('#state').html('<option value="">----------Select State----------</option>');
+                  jQuery.each(response.state, function(index, state){
+                      jQuery('#state').append('<option value="'+state.id+'">'+state.name+'</option>');
+                  });
+              },
+          });
+      });
 
-## Code of Conduct
+      // for auto select city
+      jQuery('#state').change(function(event){
+          var state_id = jQuery(this).val();
+          // console.log(country_id);
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+          jQuery('#city').html('');
 
-## Security Vulnerabilities
+          $.ajax({
+              url         : 'show-city',
+              type        : 'POST',
+              dataType    : 'json',
+              data        : {
+                  state_id : state_id,
+                  _token     : '{{ csrf_token() }}'
+              },
+              success     : function(response){
+                  console.log(response);
+                  jQuery('#city').html('<option value="">----------Select City----------</option>');
+                  jQuery.each(response.city, function(index, city){
+                      jQuery('#city').append('<option value="'+city.id+'">'+city.name+'</option>');
+                  });
+              },
+          });
+      });
+  });
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+</script>
+```
 
-## License
+# Frontend code for dropdown fields "Country", "State" and "City"
+```javascript
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+    <title>Dynamic Dependency DropDown</title>
+  </head>
+  <body>
+
+    <div class="col-md-4 offset-md-4 mt-5">
+    <h4 class="mt-3">Dynamic Dependency DropDown</h4>
+    <hr>
+        {{-- Country  --}}
+        <div class="form-group">
+            <label for="country">Country</label>
+            <select name="country" id="country" class="form-control">
+                <option value="#">----------Select Country----------</option>
+                @foreach($countries as $country)
+                <option value="{{ $country->id }}">{{ $country->name }}</option>
+                @endforeach
+            </select>
+        </div>
+
+        {{-- State  --}}
+        <div class="form-group">
+            <label for="state">State</label>
+            <select name="state" id="state" class="form-control">
+                <option value="">------------Select State------------</option>
+            </select>
+        </div>
+
+        {{-- City  --}}
+        <div class="form-group">
+            <label for="city">City</label>
+            <select name="city" id="city" class="form-control">
+                <option value="">------------Select City------------</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    {{-- <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script> --}}
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.6.1.min.js" integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
+</body>
+</html>
+```
+## Screenshots
+
+![App Screenshot](https://via.placeholder.com/468x300?text=App+Screenshot+Here)
+
